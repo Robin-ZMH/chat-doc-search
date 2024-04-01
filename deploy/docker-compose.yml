@@ -1,0 +1,31 @@
+version: '3.5'
+services:
+  search_engine:
+    depends_on:
+      - mongodb
+    build:
+      context: ../.
+      dockerfile: deploy/Dockerfile
+    image: search_engine:latest
+    container_name: search_engine
+    restart: always
+    ports:
+      - "9999:9999"
+    command:
+      ["/app/engine"]
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: search_engine
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+volumes:
+  mongo_data:
