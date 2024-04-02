@@ -1,4 +1,4 @@
-package http_server
+package http_handler
 
 import (
 	"chatsearch/internal/domain"
@@ -10,11 +10,30 @@ import (
 )
 
 type Handler struct {
-	core *domain.SearchEngine
+	core   *domain.SearchEngine
+	router *gin.Engine
 }
 
-func NewHandler(core *domain.SearchEngine) *Handler {
-	return &Handler{core: core}
+func NewHandler(core *domain.SearchEngine) http.Handler {
+	handler := &Handler{core: core}
+
+	router := gin.New()
+
+	router.Use(gin.Logger(), gin.Recovery())
+	router.GET("/engine/query", handler.Query)
+	router.POST("/engine/query", handler.Query)
+	router.POST("/engine/insert", handler.Insert)
+	router.PUT("/engine", handler.Update)
+	router.PATCH("/engine", handler.Update)
+	router.DELETE("/engine", handler.Delete)
+
+	handler.router = router
+
+	return handler
+}
+
+func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	h.router.ServeHTTP(writer, request)
 }
 
 func (h *Handler) Query(ctx *gin.Context) {
