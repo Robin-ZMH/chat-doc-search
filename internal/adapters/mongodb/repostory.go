@@ -23,11 +23,14 @@ func NewMongoRepo(host string) *MongoRepo {
 	defer cancel()
 
 	cli, err := mongo.Connect(ctx, options.Client().
+		SetMinPoolSize(10).
 		ApplyURI(host).
 		SetAuth(options.Credential{
 			AuthSource: "admin",
 			Username:   "admin",
-			Password:   "secret"}))
+			Password:   "secret",
+		}),
+	)
 	if err != nil {
 		panic(err)
 	}
